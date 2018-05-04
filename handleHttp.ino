@@ -15,7 +15,7 @@ void handleRoot() {
   if (server.client().localIP() == apIP) {
     server.sendContent(String("<p>You are connected through the soft AP: ") + softAP_ssid + "</p>");
   } else {
-    server.sendContent(String("<p>You are connected through the wifi network: ") + ssid + "</p>");
+    server.sendContent(String("<p>You are connected through the wifi network: ") + WiFi.SSID() + "</p>");
   }
   server.sendContent(
     "<p>You may want to <a href='/wifi'>config the wifi connection</a>.</p>"
@@ -50,7 +50,7 @@ void handleWifi() {
   if (server.client().localIP() == apIP) {
     server.sendContent(String("<p>You are connected through the soft AP: ") + softAP_ssid + "</p>");
   } else {
-    server.sendContent(String("<p>You are connected through the wifi network: ") + ssid + "</p>");
+    server.sendContent(String("<p>You are connected through the wifi network: ") + WiFi.SSID() + "</p>");
   }
   server.sendContent(
     "\r\n<br />"
@@ -63,7 +63,6 @@ void handleWifi() {
     "\r\n<br />"
     "<table><tr><th align='left'>WLAN config</th></tr>"
   );
-  server.sendContent(String() + "<tr><td>SSID " + String(ssid) + "</td></tr>");
   server.sendContent(String() + "<tr><td>IP " + toStringIp(WiFi.localIP()) + "</td></tr>");
   server.sendContent(
     "</table>"
@@ -80,23 +79,37 @@ void handleWifi() {
   } else {
     server.sendContent(String() + "<tr><td>No WLAN found</td></tr>");
   }
+  server.sendContent("</table>\r\n<br />");
+
+  server.sendContent("<form method='POST' action='bulksave'>");
+  server.sendContent("<table><tr><td>Slot</td><td>SSID</td><td>Password</td></tr>");
+
+
+  for (int i = 0; i < MAX_SSID; ++i) {
+    String slotid = String(i);
+    server.sendContent("<tr><td>Slot " + slotid + "</td><td><input type='text' name='ssid_" + slotid + "' value='" + SSID[i] + "'></td><td><input type='text' name='pwd_" + slotid + "' value='" + (SSID[i].length() > 0 ? maskPassword(PASSWORD[i]) : String("")) + "'></td></tr>");
+  }
+  server.sendContent("</table><input type='submit' value='Save All'/></form><br/>" );
+
   server.sendContent(
-    "</table>"
-    "\r\n<br /><form method='POST' action='wifisave'><h4>Connect to network:</h4>"
-    "<input type='text' placeholder='network' name='n'/>"
-    "<br /><input type='password' placeholder='password' name='p'/>"
-    "<br /><input type='submit' value='Connect/Disconnect'/></form>"
     "<p>You may want to <a href='/'>return to the home page</a>.</p>"
     "</body></html>"
   );
   server.client().stop(); // Stop is needed because we sent no content length
 }
 
-/** Handle the WLAN save form and redirect to WLAN config page again */
-void handleWifiSave() {
-  Serial.println("wifi save");
-  server.arg("n").toCharArray(ssid, sizeof(ssid) - 1);
-  server.arg("p").toCharArray(password, sizeof(password) - 1);
+void handleBulkSave() {
+  Serial.println("Bulk save");
+  for (int i = 0; i < MAX_SSID; ++i) {
+    SSID[i] = server.arg("ssid_" + String(i));
+    if (isNoPassword(server.arg("pwd_" + String(i)))) {
+      PASSWORD[i] = "";
+    } else if (isMaskedPassword(server.arg("pwd_" + String(i)))) {
+      //DON'T UPDATE
+    } else {
+      PASSWORD[i] = server.arg("pwd_" + String(i));
+    }
+  }
   server.sendHeader("Location", "wifi", true);
   server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   server.sendHeader("Pragma", "no-cache");
@@ -104,7 +117,6 @@ void handleWifiSave() {
   server.send(302, "text/plain", "");    // Empty content inhibits Content-length header so we have to close the socket ourselves.
   server.client().stop(); // Stop is needed because we sent no content length
   saveCredentials();
-  connect = strlen(ssid) > 0; // Request WLAN connect with new credentials if there is a SSID
 }
 
 void handleNotFound() {

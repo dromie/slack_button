@@ -3,7 +3,6 @@
 #include <ESP8266WebServer.h>
 #include <DNSServer.h>
 #include <ESP8266mDNS.h>
-#include <EEPROM.h>
 
 /*
    This example serves a "hello world" on a WLAN and a SoftAP at the same time.
@@ -19,14 +18,10 @@
 
 /* Set these to your desired softAP credentials. They are not configurable at runtime */
 const char *softAP_ssid = "BUTTON_AP";
-const char *softAP_password = "12345678";
+//const char *softAP_password = "12345678";
 
 /* hostname for mDNS. Should work at least on windows. Try http://esp8266.local */
 const char *myHostname = "esp8266";
-
-/* Don't set this wifi credentials. They are configurated at runtime and stored on EEPROM */
-char ssid[32] = "";
-char password[32] = "";
 
 // DNS server
 const byte DNS_PORT = 53;
@@ -39,12 +34,7 @@ ESP8266WebServer server(80);
 IPAddress apIP(192, 168, 4, 1);
 IPAddress netMsk(255, 255, 255, 0);
 
-
-/** Should I connect to WLAN asap? */
-boolean connect;
-
-/** Last time I tried to connect to WLAN */
-unsigned long lastConnectTry = 0;
+boolean setupDone = false;
 
 /** Current WLAN status */
 unsigned int status = WL_IDLE_STATUS;
@@ -66,33 +56,28 @@ void portalSetup() {
   /* Setup web pages: root, wifi config pages, SO captive portal detectors and not found. */
   server.on("/", handleRoot);
   server.on("/wifi", handleWifi);
-  server.on("/wifisave", handleWifiSave);
+  server.on("/bulksave", handleBulkSave);
   server.on("/generate_204", handleRoot);  //Android captive portal. Maybe not needed. Might be handled by notFound handler.
   server.on("/fwlink", handleRoot);  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
   server.onNotFound(handleNotFound);
   server.begin(); // Web server start
   Serial.println("HTTP server started");
-  loadCredentials(); // Load WLAN credentials from network
-  connect = strlen(ssid) > 0; // Request WLAN connect if there is a SSID
 }
 
-void connectWifi(String ssid, String password) {
-  Serial.println("Connecting as wifi client...");
-  WiFi.disconnect();
-  WiFi.begin(ssid.c_str(), password.c_str());
-  int connRes = WiFi.waitForConnectResult();
-  Serial.print("connRes: ");
-  Serial.println(connRes);
-}
-
-void serverLoop() {
-  // Do work:
+void portalLoop() {
+  if (!setupDone) {
+    portalSetup();
+    setupDone = true;
+  }
   //DNS
   dnsServer.processNextRequest();
   //HTTP
   server.handleClient();
 
 }
+
+
+/***
 
 void CAloop() {
   if (connect) {
@@ -104,8 +89,8 @@ void CAloop() {
   {
     unsigned int s = WiFi.status();
     if (s == 0 && millis() > (lastConnectTry + 60000)) {
-      /* If WLAN disconnected and idle try to connect */
-      /* Don't set retry time too low as retry interfere the softAP operation */
+      // If WLAN disconnected and idle try to connect 
+      // Don't set retry time too low as retry interfere the softAP operation 
       connect = true;
     }
     if (status != s) { // WLAN status change
@@ -113,7 +98,7 @@ void CAloop() {
       Serial.println(s);
       status = s;
       if (s == WL_CONNECTED) {
-        /* Just connected to WLAN */
+        // Just connected to WLAN
         Serial.println("");
         Serial.print("Connected to ");
         Serial.println(ssid);
@@ -133,5 +118,9 @@ void CAloop() {
       }
     }
   }
-  serverLoop();
+  portalLoop();
 }
+
+*/
+
+

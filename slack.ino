@@ -1,10 +1,11 @@
 #include <ESP8266WiFi.h>
+#include "private.h"
 
 
 /*
  SLACK CONFIGURATION
  */
-const String slack_token = "T4LFAT7RV/B4K4LV7CH/sMnkeMvQMYYAuofZOt13m68G";
+
 const String slack_hook_url = "/services/" + slack_token;
 const String slack_icon_url = "<SLACK_ICON_URL>";
 const String slack_message = "test";

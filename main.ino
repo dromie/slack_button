@@ -4,7 +4,7 @@ bool sent = false;
 bool portal = false;
 int tries = 0;
 
-ESP8266WiFiMulti wifiMulti;
+ESP8266WiFiMyMulti wifiMulti;
 int last_serial = 0;
 
 void setup()

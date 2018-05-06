@@ -76,6 +76,7 @@ void cmd_status() {
   Serial.print("Mac: ");Serial.println(WiFi.macAddress());
   Serial.print("Status: ");Serial.println(WiFi.status());
   if (WiFi.status() == WL_CONNECTED ) {
+    Serial.print("SSID: ");Serial.println(WiFi.SSID());
     Serial.print("Connected, IP address: ");
     Serial.println(WiFi.localIP());
   }

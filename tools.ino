@@ -1,5 +1,3 @@
-void(* HWResetFunc) (void) = 0; //declare reset function @ address 0
-
 
 /** Is this an IP? */
 boolean isIp(String str) {

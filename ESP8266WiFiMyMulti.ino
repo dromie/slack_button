@@ -1,28 +1,3 @@
-/**
-
-   @file ESP8266WiFiMulti.cpp
-   @date 16.05.2015
-   @author Markus Sattler
-
-   Copyright (c) 2015 Markus Sattler. All rights reserved.
-   This file is part of the esp8266 core for Arduino environment.
-
-   This library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
-
-   This library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with this library; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-
-*/
-
 #include "ESP8266WiFiMyMulti.h"
 #include <limits.h>
 #include <string.h>
@@ -38,7 +13,14 @@ bool ESP8266WiFiMyMulti::addAP(const char* ssid, const char *passphrase) {
   return APlistAdd(ssid, passphrase);
 }
 
+bool alwaysTrue() {
+  return true;
+}
 wl_status_t ESP8266WiFiMyMulti::run(void) {
+  run(alwaysTrue);
+}
+
+wl_status_t ESP8266WiFiMyMulti::run(TConnectivityTestFunction test) {
 
   wl_status_t status = WiFi.status();
   if (status == WL_DISCONNECTED || status == WL_NO_SSID_AVAIL || status == WL_IDLE_STATUS || status == WL_CONNECT_FAILED) {
@@ -89,7 +71,7 @@ wl_status_t ESP8266WiFiMyMulti::run(void) {
         WiFi.getNetworkInfo(i, ssid_scan, sec_scan, rssi_scan, BSSID_scan, chan_scan, hidden_scan);
 
         bool known = false;
-        for (auto &entry:APlist) {
+        for (auto &entry : APlist) {
           if (ssid_scan == entry.ssid) { // SSID match
             known = true;
             tries = entry.failedConnects;
@@ -136,8 +118,10 @@ wl_status_t ESP8266WiFiMyMulti::run(void) {
           delay(10);
           status = WiFi.status();
         }
-        if (status != WL_CONNECTED ) {
-              ++(bestNetwork->failedConnects);
+        if (status != WL_CONNECTED || ! test() ) {
+          ++(bestNetwork->failedConnects);
+          delay(0);
+          WiFi.disconnect();
         }
 
 #ifdef DEBUG_ESP_WIFI

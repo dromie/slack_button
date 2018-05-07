@@ -21,8 +21,12 @@ void setup()
   }
 }
 
+bool sendMessage() {
+  return postMessageToSlack(slack_message);
+}
+
 void businessLoop() {
-  wl_status_t status = wifiMulti.run();
+  wl_status_t status = wifiMulti.run(sendMessage);
   if (status == WL_NO_SSID_AVAIL && WiFi.scanComplete() == WIFI_SCAN_RUNNING) {
     Serial.println("Scanning");
     delay(1000);
@@ -35,10 +39,6 @@ void businessLoop() {
         ++tries;
         delay(1000);
       }
-    } else if (!sent && WiFi.status() == WL_CONNECTED) {
-      sent = postMessageToSlack(slack_message);
-      Serial.println("Sent:" + sent);
-      delay(1000);
     }
   }
 }

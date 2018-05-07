@@ -1,5 +1,4 @@
 /* Serial Commands */
-
 const String CMD_RESET  = "reset";
 const String CMD_RESTART  = "restart";
 const String CMD_TEST  = "test";

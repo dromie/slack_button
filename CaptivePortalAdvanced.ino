@@ -2,19 +2,6 @@
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <DNSServer.h>
-#include <ESP8266mDNS.h>
-
-/*
-   This example serves a "hello world" on a WLAN and a SoftAP at the same time.
-   The SoftAP allow you to configure WLAN parameters at run time. They are not setup in the sketch but saved on EEPROM.
-
-   Connect your computer or cell phone to wifi network ESP_ap with password 12345678. A popup may appear and it allow you to go to WLAN config. If it does not then navigate to http://192.168.4.1/wifi and config it there.
-   Then wait for the module to connect to your wifi and take note of the WLAN IP it got. Then you can disconnect from ESP_ap and return to your regular WLAN.
-
-   Now the ESP8266 is in your network. You can reach it through http://192.168.x.x/ (the IP you took note of) or maybe at http://esp8266.local too.
-
-   This is a captive portal because through the softAP it will redirect any http request to http://192.168.4.1/
-*/
 
 /* Set these to your desired softAP credentials. They are not configurable at runtime */
 const char *softAP_ssid = "BUTTON_AP";
@@ -36,15 +23,12 @@ IPAddress netMsk(255, 255, 255, 0);
 
 boolean setupDone = false;
 
-/** Current WLAN status */
-unsigned int status = WL_IDLE_STATUS;
-
 void portalSetup() {
   delay(1000);
   Serial.print("Configuring access point...");
   /* You can remove the password parameter if you want the AP to be open. */
   WiFi.softAPConfig(apIP, apIP, netMsk);
-  WiFi.softAP(softAP_ssid);
+  WiFi.softAP(softAP_ssid, NULL, 1, 0, 8);
   delay(500); // Without delay I've seen the IP address blank
   Serial.print("AP IP address: ");
   Serial.println(WiFi.softAPIP());
@@ -66,6 +50,7 @@ void portalSetup() {
 
 void portalLoop() {
   if (!setupDone) {
+    WiFi.disconnect();
     portalSetup();
     setupDone = true;
   }

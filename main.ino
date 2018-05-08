@@ -10,8 +10,14 @@ int last_serial = 0;
 void setup()
 {
   Serial.begin(115200);
+  portal=false;
+  sent=false;
+  tries=0;
   Serial.flush();
   Serial.println();
+  WiFi.setPhyMode(WIFI_PHY_MODE_11G);
+  WiFi.enableAP(false);
+  WiFi.enableSTA(true);
   loadCredentials();
   last_serial = getCredentialsSerial();
   for (int i = 0; i < MAX_SSID; ++i) {

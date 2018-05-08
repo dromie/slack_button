@@ -81,6 +81,7 @@ void cmd_status() {
   }
   Serial.print("Message sent: ");Serial.println(sent);
   Serial.print("Free Heap: ");Serial.println(ESP.getFreeHeap());
+  WiFi.printDiag(Serial);
 }
 
 

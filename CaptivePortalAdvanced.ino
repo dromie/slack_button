@@ -27,8 +27,12 @@ void portalSetup() {
   delay(1000);
   Serial.print("Configuring access point...");
   /* You can remove the password parameter if you want the AP to be open. */
+  WiFi.enableAP(true);
+  WiFi.enableSTA(false);
+
+  WiFi.setPhyMode(WIFI_PHY_MODE_11B);
   WiFi.softAPConfig(apIP, apIP, netMsk);
-  WiFi.softAP(softAP_ssid, NULL, 1, 0, 8);
+  WiFi.softAP(softAP_ssid);
   delay(500); // Without delay I've seen the IP address blank
   Serial.print("AP IP address: ");
   Serial.println(WiFi.softAPIP());
